@@ -105,4 +105,4 @@ MIT License — see [LICENSE](./LICENSE) for details.
 
 ---
 
-**Built with ❤️, music, and coding** | Crescendo © 2025
+**Built with love** | Crescendo © 2025
