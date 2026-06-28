@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Crescendo Frontend Design System
+   Music-native, dark, warm, conversion-focused
+   ============================================ */
+
+@layer base {
+  :root {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 94%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 94%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 16 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 100% 27%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 220 9% 64%;
+    --accent: 323 48% 43%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 16 100% 60%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#0f0f0f] text-[#f0f0f0] antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    @apply bg-[#ff6b35] text-white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-[#0f0f0f];
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-[#2d2d2d];
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#ff6b35];
+  }
+}
+
+@layer components {
+  .studio-surface {
+    @apply rounded-xl border border-[#2d2d2d] bg-[#1a1a1a] shadow-[0_18px_50px_rgba(0,0,0,0.35)];
+  }
+
+  .studio-surface-soft {
+    @apply rounded-xl border border-[#2d2d2d]/80 bg-[#151515];
+  }
+
+  .studio-button-primary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#ff6b35] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(255,107,53,0.24)] transition duration-200 hover:bg-[#ff5722] hover:shadow-[0_18px_42px_rgba(255,107,53,0.34)] active:scale-95;
+  }
+
+  .studio-button-secondary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#3a3a3a] bg-transparent px-6 py-3 text-sm font-semibold text-[#f0f0f0] transition duration-200 hover:border-[#ff6b35] hover:bg-[#ff6b35]/10 active:scale-95;
+  }
+
+  .studio-button-ghost {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-[#ffb88c] transition duration-200 hover:bg-[#ff6b35]/10 hover:text-[#ff6b35];
+  }
+
+  .studio-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-[#ffb88c];
+  }
+
+  .studio-heading {
+    @apply font-display font-bold tracking-[-0.04em] text-[#f0f0f0];
+  }
+
+  .studio-body {
+    @apply leading-7 text-[#9ca3af];
+  }
+
+  .score-gradient {
+    background: linear-gradient(135deg, #ff6b35 0%, #a23b72 100%);
+  }
+
+  .prediction-card {
+    @apply relative overflow-hidden rounded-xl border border-[#ff6b35]/25 bg-[#1a1a1a] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.48)];
+  }
+
+  .prediction-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.28), transparent 28%),
+      radial-gradient(circle at 80% 0%, rgba(162, 59, 114, 0.24), transparent 32%);
+    pointer-events: none;
+  }
+
+  .waveform {
+    @apply flex h-20 items-end gap-1 overflow-hidden rounded-lg bg-[#0f0f0f] p-3;
+  }
+
+  .waveform span {
+    @apply block flex-1 rounded-t-full bg-[#ff6b35]/35;
+    height: var(--h);
+  }
+
+  .waveform span:nth-child(3n) {
+    @apply bg-[#a23b72]/70;
+  }
+
+  .waveform span:nth-child(5n) {
+    @apply bg-[#10b981]/70;
+  }
+
+  .pricing-highlight {
+    @apply border-[#ff6b35] shadow-[0_0_34px_rgba(255,107,53,0.26)];
+  }
+
+  .score-count {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .noise-bg {
+    position: relative;
+  }
+
+  .noise-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}

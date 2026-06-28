@@ -1,0 +1,89 @@
+# ============================================
+# Crescendo ML Pipeline — Configuration
+# ============================================
+
+project:
+  name: crescendo-ml
+  version: "1.0.0"
+
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "saved_models"
+  notebooks: "notebooks"
+
+# --- Viral Predictor ---
+viral_predictor:
+  model_type: "xgboost"
+  features:
+    audio:
+      - danceability
+      - energy
+      - loudness
+      - speechiness
+      - acousticness
+      - instrumentalness
+      - liveness
+      - valence
+      - tempo
+      - duration_ms
+    artist:
+      - followers
+      - monthly_listeners
+      - popularity
+    social:
+      - tiktok_mentions
+      - twitter_mentions
+      - playlist_adds
+  hyperparameters:
+    n_estimators: 500
+    max_depth: 8
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+  training:
+    test_size: 0.2
+    random_state: 42
+    cv_folds: 5
+
+# --- Sentiment Model ---
+sentiment_model:
+  base_model: "distilbert-base-uncased"
+  num_labels: 8
+  labels:
+    - happiness
+    - sadness
+    - anger
+    - love
+    - fear
+    - hope
+    - nostalgia
+    - excitement
+  training:
+    epochs: 5
+    batch_size: 32
+    learning_rate: 2e-5
+    warmup_steps: 500
+    max_length: 256
+
+# --- Genre Classifier ---
+genre_classifier:
+  model_type: "cnn_lstm"
+  num_classes: 15
+  training:
+    epochs: 30
+    batch_size: 64
+    learning_rate: 0.001
+
+# --- Trend Forecaster ---
+trend_forecaster:
+  model_type: "prophet"
+  seasonality:
+    yearly: true
+    weekly: true
+    daily: false
+  changepoint_prior_scale: 0.05
+  forecast_periods: 90

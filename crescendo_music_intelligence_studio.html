@@ -1,0 +1,1560 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crescendo Music Intelligence Studio</title>
+  <style>
+    @font-face {
+      font-display: swap;
+      font-family: "Messina Sans";
+      font-style: normal;
+      font-weight: 400;
+      src: url("https://afternow.co/wp-content/themes/afternow/build/fonts/MessinaSansWeb-Regular.woff2?v=26487284") format("woff2");
+    }
+
+    @font-face {
+      font-display: swap;
+      font-family: "Messina Sans";
+      font-style: normal;
+      font-weight: 600;
+      src: url("https://afternow.co/wp-content/themes/afternow/build/fonts/MessinaSansWeb-SemiBold.woff2?v=16aa2ba6") format("woff2");
+    }
+
+    @font-face {
+      font-display: swap;
+      font-family: "Messina Sans";
+      font-style: normal;
+      font-weight: 700;
+      src: url("https://afternow.co/wp-content/themes/afternow/build/fonts/MessinaSansWeb-Bold.woff2?v=a18ed48c") format("woff2");
+    }
+
+    @font-face {
+      font-display: swap;
+      font-family: "Messina Sans Mono";
+      font-style: normal;
+      font-weight: 500;
+      src: url("https://afternow.co/wp-content/themes/afternow/build/fonts/MessinaSansMonoWeb-Regular.woff2?v=f53a6524") format("woff2");
+    }
+
+    :root {
+      --green: #4ed64e;
+      --moss: #4d4d0f;
+      --celeste: #bdfff3;
+      --yellow: #ffff8c;
+      --orange: #fd8a65;
+      --blue: #276284;
+      --light-blue: #aadcff;
+      --purple: #6e56ff;
+      --malva: #e7d8ee;
+      --white: #ffffff;
+      --black: #000000;
+      --gray-900: #151513;
+      --gray-800: #272824;
+      --gray-700: #42433d;
+      --gray-600: #5c5e55;
+      --gray-500: #77786d;
+      --gray-400: #9c9e94;
+      --gray-300: #c1c2bc;
+      --gray-200: #dadbd7;
+      --gray-100: #f0f0ef;
+      --font-primary: "Messina Sans", Arial, sans-serif;
+      --font-mono: "Messina Sans Mono", "Courier New", monospace;
+      --radius: 12px;
+      --gap: 1px;
+      --line: rgba(0, 0, 0, 0.1);
+      --ease: cubic-bezier(.17, .17, .2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background: var(--black);
+      scrollbar-gutter: stable;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--black);
+      font-family: var(--font-primary);
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      line-height: 1.4;
+      min-height: 100vh;
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    video {
+      background: var(--gray-100);
+      display: block;
+      height: auto;
+      max-width: 100%;
+    }
+
+    .sr-only {
+      border: 0;
+      clip: rect(0, 0, 0, 0);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+    .mono-label {
+      color: var(--gray-500);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .app {
+      background: var(--white);
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 5;
+    }
+
+    .brand {
+      padding: 0.25rem 1rem 1.4rem;
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.055em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      color: var(--gray-400);
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      margin-top: 0.55rem;
+      text-transform: uppercase;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: 0.2rem;
+      padding: 0.4rem 0.55rem 0.8rem;
+    }
+
+    .nav-heading {
+      color: var(--gray-500);
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      padding: 0.4rem 0.55rem;
+      text-transform: uppercase;
+    }
+
+    .nav-button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      color: var(--white);
+      display: flex;
+      gap: 0.75rem;
+      min-height: 2.55rem;
+      padding: 0.72rem 0.7rem;
+      text-align: left;
+      transition: background 260ms var(--ease), color 260ms var(--ease), transform 260ms var(--ease);
+      width: 100%;
+    }
+
+    .nav-button:hover {
+      background: var(--gray-800);
+      transform: translateX(3px);
+    }
+
+    .nav-button.is-active {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .nav-mark {
+      align-items: center;
+      background: currentColor;
+      border-radius: 50%;
+      display: grid;
+      flex: 0 0 0.72rem;
+      height: 0.72rem;
+      opacity: 0.9;
+      place-items: center;
+      width: 0.72rem;
+    }
+
+    .nav-text {
+      flex: 1;
+      font-size: 0.86rem;
+      font-weight: 600;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-badge {
+      background: var(--yellow);
+      border-radius: 999px;
+      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      line-height: 1;
+      padding: 0.42em 0.66em;
+      text-transform: uppercase;
+    }
+
+    .profile {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      margin-top: auto;
+      padding: 1rem;
+    }
+
+    .profile-row {
+      align-items: center;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .profile-avatar {
+      align-items: center;
+      background: var(--purple);
+      border-radius: 50%;
+      color: var(--white);
+      display: grid;
+      flex: 0 0 2.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      height: 2.35rem;
+      place-items: center;
+      width: 2.35rem;
+    }
+
+    .profile-name {
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .profile-role {
+      color: var(--gray-400);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+    }
+
+    .main {
+      background: var(--white);
+      min-width: 0;
+    }
+
+    .topbar {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      min-height: 4.5rem;
+      padding: 0.9rem clamp(1rem, 2vw, 2rem);
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+
+    .page-title {
+      font-size: clamp(1.3rem, 2vw, 1.8rem);
+      font-weight: 700;
+      letter-spacing: -0.055em;
+      line-height: 1;
+    }
+
+    .page-meta {
+      color: var(--gray-500);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      margin-top: 0.45rem;
+      text-transform: uppercase;
+    }
+
+    .topbar-actions {
+      align-items: center;
+      display: flex;
+      gap: 0.55rem;
+    }
+
+    .search-field {
+      align-items: center;
+      background: var(--gray-100);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--gray-700);
+      display: flex;
+      min-height: 2.4rem;
+      min-width: min(18rem, 32vw);
+      padding: 0 0.85rem;
+    }
+
+    .search-field input {
+      background: transparent;
+      border: 0;
+      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      outline: 0;
+      text-transform: uppercase;
+      width: 100%;
+    }
+
+    .icon-button {
+      align-items: center;
+      background: var(--black);
+      border: 0;
+      border-radius: 50%;
+      color: var(--white);
+      display: grid;
+      height: 2.4rem;
+      place-items: center;
+      transition: background 240ms var(--ease), color 240ms var(--ease), transform 240ms var(--ease);
+      width: 2.4rem;
+    }
+
+    .icon-button:hover {
+      background: var(--yellow);
+      color: var(--black);
+      transform: translateY(-2px);
+    }
+
+    .content {
+      display: grid;
+      gap: 1rem;
+      padding: clamp(1rem, 2vw, 2rem);
+    }
+
+    .hero {
+      background: var(--black);
+      border-radius: var(--radius);
+      color: var(--white);
+      display: grid;
+      grid-template-columns: minmax(0, 1.04fr) minmax(20rem, 0.96fr);
+      min-height: 30rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before {
+      animation: heroSweep 9s var(--ease) infinite alternate;
+      background: linear-gradient(115deg, transparent 0%, rgba(110, 86, 255, 0.55) 35%, rgba(255, 255, 140, 0.55) 58%, transparent 100%);
+      content: "";
+      filter: blur(36px);
+      height: 16rem;
+      left: 26%;
+      opacity: 0.7;
+      position: absolute;
+      top: -6rem;
+      width: 42rem;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      padding: clamp(1.25rem, 4vw, 3rem);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 7.1rem);
+      font-weight: 700;
+      letter-spacing: -0.07em;
+      line-height: 0.93;
+      margin-top: 1rem;
+      max-width: 9ch;
+      text-wrap: balance;
+    }
+
+    .hero-body {
+      color: var(--gray-300);
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      max-width: 42rem;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 1.4rem;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 0.68em 0.9em;
+      text-transform: uppercase;
+    }
+
+    .tag.is-hot {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .hero-media {
+      background: var(--gray-900);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      min-height: 30rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .video-frame {
+      background: linear-gradient(145deg, var(--gray-800), var(--black));
+      height: 100%;
+      min-height: 22rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-frame video,
+    .signal-video video {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    .video-frame::after,
+    .signal-video::after {
+      background: linear-gradient(180deg, transparent 30%, rgba(0, 0, 0, 0.62));
+      content: "";
+      inset: 0;
+      position: absolute;
+    }
+
+    .hero-readout {
+      align-items: flex-end;
+      background: var(--yellow);
+      color: var(--black);
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+
+    .hero-readout span {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+    }
+
+    .hero-readout strong {
+      font-size: clamp(2rem, 4vw, 3.8rem);
+      letter-spacing: -0.07em;
+      line-height: 0.9;
+    }
+
+    .marquee {
+      background: var(--black);
+      border-radius: var(--radius);
+      color: var(--white);
+      overflow: hidden;
+      padding: 0.9rem 0;
+      white-space: nowrap;
+    }
+
+    .marquee-track {
+      animation: marquee 24s linear infinite;
+      display: inline-flex;
+      gap: 2rem;
+      min-width: max-content;
+      padding-left: 100%;
+    }
+
+    .marquee span {
+      color: var(--gray-300);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .signal-grid,
+    .metric-grid,
+    .work-grid,
+    .insight-grid {
+      display: grid;
+      gap: var(--gap);
+    }
+
+    .signal-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .signal-video {
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      min-height: 13rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .signal-label {
+      bottom: 1rem;
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      left: 1rem;
+      position: absolute;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .metric-card {
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      min-height: 10rem;
+      overflow: hidden;
+      padding: 1.15rem;
+      position: relative;
+      transition: border-radius 260ms var(--ease), transform 260ms var(--ease);
+    }
+
+    .metric-card:nth-child(2) {
+      background: var(--malva);
+    }
+
+    .metric-card:nth-child(3) {
+      background: var(--light-blue);
+    }
+
+    .metric-card:nth-child(4) {
+      background: var(--yellow);
+    }
+
+    .metric-card:hover {
+      border-radius: 0;
+      transform: translateY(-4px);
+    }
+
+    .metric-value {
+      font-size: clamp(2.3rem, 4vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: -0.07em;
+      line-height: 0.95;
+      margin-top: 1.4rem;
+    }
+
+    .metric-note {
+      color: var(--gray-700);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      margin-top: 0.55rem;
+      text-transform: uppercase;
+    }
+
+    .meter {
+      background: rgba(0, 0, 0, 0.14);
+      height: 0.28rem;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      background: var(--black);
+      height: 100%;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 1.2s var(--ease);
+    }
+
+    .is-ready .meter-fill {
+      transform: scaleX(var(--value, 0));
+    }
+
+    .work-grid {
+      grid-template-columns: minmax(0, 1.5fr) minmax(22rem, 1fr);
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      align-items: flex-start;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 1.08;
+      margin-top: 0.35rem;
+    }
+
+    .panel-action {
+      background: var(--black);
+      border: 0;
+      border-radius: 999px;
+      color: var(--white);
+      flex: 0 0 auto;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      padding: 0.72em 1em;
+      text-transform: uppercase;
+      transition: background 220ms var(--ease), color 220ms var(--ease);
+    }
+
+    .panel-action:hover {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .panel-body {
+      padding: 1rem;
+    }
+
+    .wave-panel {
+      background: var(--black);
+      border-radius: var(--radius);
+      height: 7.5rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      padding: 0.75rem;
+      position: relative;
+    }
+
+    .wave-panel::before {
+      animation: scan 2.8s linear infinite;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+      content: "";
+      height: 100%;
+      left: -30%;
+      position: absolute;
+      top: 0;
+      width: 30%;
+      z-index: 1;
+    }
+
+    .wave-bars,
+    .trajectory-bars {
+      align-items: flex-end;
+      display: flex;
+      gap: 0.18rem;
+      height: 100%;
+    }
+
+    .wave-bar {
+      background: var(--gray-700);
+      border-radius: 999px 999px 0 0;
+      flex: 1;
+      height: var(--height);
+      min-height: 0.35rem;
+      transition: background 240ms var(--ease), height 600ms var(--ease);
+    }
+
+    .wave-bar.is-played {
+      background: var(--purple);
+    }
+
+    .wave-bar.is-active {
+      background: var(--yellow);
+    }
+
+    .song-list,
+    .gem-list,
+    .activity-list {
+      display: grid;
+    }
+
+    .song-row,
+    .gem-row,
+    .activity-row {
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      gap: 0.8rem;
+      min-width: 0;
+      padding: 0.85rem 0;
+    }
+
+    .song-row {
+      align-items: center;
+      grid-template-columns: 2rem minmax(0, 1fr) 5rem 3rem;
+    }
+
+    .song-row:last-child,
+    .gem-row:last-child,
+    .activity-row:last-child {
+      border-bottom: 0;
+    }
+
+    .song-index,
+    .song-score,
+    .emotion-value,
+    .time {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .song-index,
+    .time {
+      color: var(--gray-500);
+    }
+
+    .song-title,
+    .gem-title,
+    .artist-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+
+    .song-artist,
+    .gem-meta,
+    .artist-meta {
+      color: var(--gray-500);
+      font-size: 0.76rem;
+      margin-top: 0.18rem;
+    }
+
+    .song-meter,
+    .emotion-track {
+      background: var(--gray-200);
+      height: 0.28rem;
+      overflow: hidden;
+    }
+
+    .song-meter span,
+    .emotion-track span {
+      background: var(--purple);
+      display: block;
+      height: 100%;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 1s var(--ease);
+    }
+
+    .is-ready .song-meter span,
+    .is-ready .emotion-track span {
+      transform: scaleX(var(--value, 0));
+    }
+
+    .gem-row {
+      align-items: center;
+      background: var(--gray-100);
+      border: 0;
+      border-radius: var(--radius);
+      grid-template-columns: minmax(0, 1fr) auto;
+      margin-bottom: 0.55rem;
+      padding: 0.95rem;
+      transition: background 240ms var(--ease), border-radius 240ms var(--ease), transform 240ms var(--ease);
+    }
+
+    .gem-row:hover {
+      background: var(--yellow);
+      border-radius: 0;
+      transform: translateX(4px);
+    }
+
+    .score-pill {
+      background: var(--purple);
+      border-radius: 999px;
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 0.5em 0.75em;
+    }
+
+    .trend-panel {
+      padding: 1rem;
+    }
+
+    .trend-head {
+      align-items: center;
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .trend-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+    }
+
+    .trend-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .trend-tag {
+      background: var(--gray-100);
+      border: 0;
+      border-radius: 999px;
+      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      padding: 0.66em 0.9em;
+      text-transform: uppercase;
+      transition: background 220ms var(--ease), border-radius 220ms var(--ease), color 220ms var(--ease);
+    }
+
+    .trend-tag.is-selected {
+      background: var(--black);
+      border-radius: 0;
+      color: var(--white);
+    }
+
+    .timeline {
+      align-items: end;
+      background: var(--black);
+      border-radius: var(--radius);
+      display: flex;
+      gap: 0.18rem;
+      height: 5.25rem;
+      overflow: hidden;
+      padding: 0.55rem;
+    }
+
+    .timeline-segment {
+      align-items: flex-end;
+      display: flex;
+      flex: 1;
+      height: 100%;
+      position: relative;
+    }
+
+    .timeline-bar {
+      background: var(--gray-700);
+      border-radius: 999px 999px 0 0;
+      height: var(--height);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 900ms var(--ease);
+      width: 100%;
+    }
+
+    .timeline-segment.is-peak .timeline-bar {
+      background: var(--yellow);
+    }
+
+    .is-ready .timeline-bar {
+      transform: scaleY(1);
+    }
+
+    .insight-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) minmax(21rem, 1fr);
+    }
+
+    .emotion-row {
+      align-items: center;
+      display: grid;
+      gap: 0.6rem;
+      grid-template-columns: 5.5rem minmax(0, 1fr) 2.6rem;
+      padding: 0.45rem 0;
+    }
+
+    .emotion-name {
+      color: var(--gray-600);
+      font-size: 0.76rem;
+    }
+
+    .emotion-track span {
+      background: var(--orange);
+    }
+
+    .artist-stack {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .artist-card {
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .artist-top {
+      align-items: center;
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .artist-avatar {
+      align-items: center;
+      background: var(--malva);
+      border-radius: 50%;
+      display: grid;
+      flex: 0 0 2.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      height: 2.6rem;
+      place-items: center;
+      width: 2.6rem;
+    }
+
+    .trajectory-bars {
+      height: 2.7rem;
+    }
+
+    .trajectory-bar {
+      background: var(--gray-300);
+      border-radius: 999px 999px 0 0;
+      flex: 1;
+      height: var(--height);
+    }
+
+    .trajectory-bar.is-up {
+      background: var(--green);
+    }
+
+    .artist-stats {
+      border-top: 1px solid var(--line);
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.9rem;
+      padding-top: 0.85rem;
+    }
+
+    .artist-stat strong {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    .artist-stat span {
+      color: var(--gray-500);
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      margin-top: 0.16rem;
+      text-transform: uppercase;
+    }
+
+    .activity-panel {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .activity-panel .panel-header {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .activity-panel .mono-label {
+      color: var(--gray-400);
+    }
+
+    .activity-row {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+      grid-template-columns: 0.5rem minmax(0, 1fr) auto;
+      padding: 0.85rem 0;
+    }
+
+    .activity-dot {
+      background: var(--yellow);
+      border-radius: 50%;
+      height: 0.5rem;
+      margin-top: 0.35rem;
+      width: 0.5rem;
+    }
+
+    .activity-copy {
+      color: var(--gray-200);
+      font-size: 0.8rem;
+    }
+
+    .activity-copy strong {
+      color: var(--white);
+    }
+
+    @keyframes heroSweep {
+      from { transform: translate3d(-4rem, 0, 0) rotate(0deg); }
+      to { transform: translate3d(7rem, 5rem, 0) rotate(10deg); }
+    }
+
+    @keyframes scan {
+      from { transform: translateX(0); }
+      to { transform: translateX(460%); }
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        align-items: center;
+        flex-direction: row;
+        gap: 0.75rem;
+        height: auto;
+        overflow-x: auto;
+        padding: 0.75rem;
+        position: sticky;
+      }
+
+      .brand {
+        flex: 0 0 auto;
+        padding: 0 0.75rem 0 0;
+      }
+
+      .brand-subtitle,
+      .nav-heading,
+      .profile {
+        display: none;
+      }
+
+      .nav-group {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 0.4rem;
+        padding: 0;
+      }
+
+      .nav-button {
+        flex: 0 0 auto;
+        min-height: 2.35rem;
+        white-space: nowrap;
+      }
+
+      .nav-button:hover {
+        transform: none;
+      }
+
+      .topbar {
+        top: 3.9rem;
+      }
+
+      .hero,
+      .work-grid,
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-grid,
+      .signal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .sidebar {
+        top: 0;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        top: 3.85rem;
+      }
+
+      .topbar-actions,
+      .search-field {
+        width: 100%;
+      }
+
+      .metric-grid,
+      .signal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 0;
+      }
+
+      .hero-copy {
+        min-height: 21rem;
+      }
+
+      .hero-media {
+        min-height: 22rem;
+      }
+
+      .song-row {
+        grid-template-columns: 1.4rem minmax(0, 1fr) 2.6rem;
+      }
+
+      .song-meter {
+        display: none;
+      }
+
+      .trend-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="sr-only">Crescendo Music Intelligence Studio</h1>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="Studio navigation">
+      <div class="brand">
+        <div class="brand-title">Crescendo</div>
+        <div class="brand-subtitle">Intelligence Studio</div>
+      </div>
+
+      <nav class="nav-group" aria-label="Core navigation" data-nav="core"></nav>
+      <nav class="nav-group" aria-label="Analysis navigation" data-nav="analysis"></nav>
+      <nav class="nav-group" aria-label="System navigation" data-nav="system"></nav>
+
+      <div class="profile">
+        <div class="profile-row">
+          <div class="profile-avatar">RJ</div>
+          <div>
+            <div class="profile-name">Radhika Joshi</div>
+            <div class="profile-role">Data Scientist</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="page-title" id="pageTitle">Prediction Lab</div>
+          <div class="page-meta">Model: Ensemble v2.4 / Last trained 6h ago / 50,412 songs indexed</div>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="search-field">
+            <span class="sr-only">Search songs and artists</span>
+            <input type="search" placeholder="Search songs, artists...">
+          </label>
+          <button class="icon-button" type="button" aria-label="Refresh model">R</button>
+          <button class="icon-button" type="button" aria-label="Open alerts">A</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <section class="hero" aria-labelledby="heroTitle">
+          <div class="hero-copy">
+            <div>
+              <div class="mono-label">Live Music Intelligence</div>
+              <h2 class="hero-title" id="heroTitle">Signals before the charts.</h2>
+            </div>
+
+            <div>
+              <p class="hero-body">Crescendo watches audio similarity, lyric emotion, social velocity, and listener lift as one moving system.</p>
+              <div class="tag-row" aria-label="Current operating signals">
+                <span class="tag is-hot">Prediction Lab</span>
+                <span class="tag">87% confidence</span>
+                <span class="tag">19 markets live</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-media">
+            <div class="video-frame">
+              <video muted autoplay loop playsinline preload="metadata" poster="https://vz-d1573826-997.b-cdn.net/eeaaea75-9e67-4a7e-aa33-6ed9ee1272ba/thumbnail.jpg" src="https://vz-d1573826-997.b-cdn.net/eeaaea75-9e67-4a7e-aa33-6ed9ee1272ba/play_1080p.mp4"></video>
+            </div>
+            <div class="hero-readout">
+              <span>Streaming pulse</span>
+              <strong>+312</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-track">
+            <span>Audio similarity</span>
+            <span>Social lift</span>
+            <span>Lyric emotion</span>
+            <span>Audience heat</span>
+            <span>Release velocity</span>
+            <span>Playlist movement</span>
+          </div>
+        </div>
+
+        <section class="signal-grid" aria-label="Animated signal previews" id="signalGrid"></section>
+        <section class="metric-grid" aria-label="Model metrics" id="metricGrid"></section>
+
+        <section class="work-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="mono-label">Viral Forecast</div>
+                <h2 class="panel-title">Top viral predictions - next 30 days</h2>
+              </div>
+              <button class="panel-action" type="button">View all</button>
+            </div>
+            <div class="panel-body">
+              <div class="wave-panel">
+                <div class="wave-bars" id="waveBars" aria-hidden="true"></div>
+              </div>
+              <div class="song-list" id="songList"></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="mono-label">Gems Vault</div>
+                <h2 class="panel-title">Today's hidden discoveries</h2>
+              </div>
+              <button class="panel-action" type="button">Vault</button>
+            </div>
+            <div class="panel-body">
+              <div class="gem-list" id="gemList"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel trend-panel">
+          <div class="trend-head">
+            <div>
+              <div class="mono-label">Trend Explorer</div>
+              <h2 class="trend-title">Genre momentum</h2>
+            </div>
+            <div class="trend-tags" id="trendTags" aria-label="Genre filters"></div>
+          </div>
+          <div class="timeline" id="timeline" aria-label="Genre momentum timeline"></div>
+        </section>
+
+        <section class="insight-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="mono-label">Emotion Canvas</div>
+                <h2 class="panel-title">Midnight Archive lyric emotions</h2>
+              </div>
+            </div>
+            <div class="panel-body" id="emotionList"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="mono-label">Artist Observatory</div>
+                <h2 class="panel-title">Growth trajectories</h2>
+              </div>
+            </div>
+            <div class="panel-body artist-stack" id="artistList"></div>
+          </article>
+
+          <article class="panel activity-panel">
+            <div class="panel-header">
+              <div>
+                <div class="mono-label">Live Activity</div>
+                <h2 class="panel-title">Signal feed</h2>
+              </div>
+            </div>
+            <div class="panel-body activity-list" id="activityList"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const data = {
+      nav: {
+        core: [
+          { label: "Prediction Lab", badge: "Live", active: true },
+          { label: "Gems Vault", badge: "12" },
+          { label: "Artist Observatory" },
+          { label: "Emotion Canvas" }
+        ],
+        analysis: [
+          { label: "Trend Explorer" },
+          { label: "AI Discovery", badge: "New" },
+          { label: "A/B Lab" }
+        ],
+        system: [
+          { label: "Data Pipeline" },
+          { label: "Settings" }
+        ]
+      },
+      signals: [
+        {
+          label: "Audience lift",
+          src: "https://vz-d1573826-997.b-cdn.net/061c1c6b-a39b-4fdb-8c1a-b623b550c401/play_1080p.mp4",
+          poster: "https://vz-d1573826-997.b-cdn.net/061c1c6b-a39b-4fdb-8c1a-b623b550c401/thumbnail.jpg"
+        },
+        {
+          label: "Creative velocity",
+          src: "https://vz-d1573826-997.b-cdn.net/c1900cff-2a81-4a81-a10d-d5d9441a4264/play_1080p.mp4",
+          poster: "https://vz-d1573826-997.b-cdn.net/c1900cff-2a81-4a81-a10d-d5d9441a4264/thumbnail.jpg"
+        },
+        {
+          label: "Discovery heat",
+          src: "https://vz-d1573826-997.b-cdn.net/7fe89237-4994-44e7-a7cb-a3a7aaa0fc7f/play_1080p.mp4",
+          poster: "https://vz-d1573826-997.b-cdn.net/7fe89237-4994-44e7-a7cb-a3a7aaa0fc7f/thumbnail.jpg"
+        }
+      ],
+      metrics: [
+        { label: "Model Accuracy", value: "84.2%", note: "+2.1% this week", meter: 0.84 },
+        { label: "ROC-AUC Score", value: "0.91", note: "Elite threshold", meter: 0.91 },
+        { label: "Predictions / 24h", value: "1,847", note: "+312 from yesterday", meter: 0.62 },
+        { label: "Hidden Gems Found", value: "38", note: "12 new today", meter: 0.38 }
+      ],
+      songs: [
+        { title: "Midnight Archive", artist: "Nora Vael", score: 87 },
+        { title: "Fever Dream", artist: "Caelan Ross", score: 94 },
+        { title: "Salt & Ceremony", artist: "The Albatross", score: 62 },
+        { title: "Borrowed Light", artist: "Yuki Sato", score: 78 },
+        { title: "Marrow", artist: "Dayo Ade", score: 55 }
+      ],
+      gems: [
+        { title: "Glass Cartography", meta: "Ifeoma & the Shore / Afro-Ambient / 1.2K streams", score: "98.4" },
+        { title: "Borrowed Light", meta: "Yuki Sato / Neo-Classical / 847 streams", score: "96.1" },
+        { title: "When Rivers Forget", meta: "Celeste Varma / Indie Folk / 2.1K streams", score: "94.8" },
+        { title: "Marrow", meta: "Dayo Ade / R&B-Jazz / 630 streams", score: "93.2" }
+      ],
+      genres: ["Indie Folk", "Afrobeats", "Bedroom Pop", "Neo-Soul", "Ambient"],
+      timeline: [18, 22, 25, 20, 28, 35, 40, 38, 42, 50, 55, 48, 52, 60, 65, 58, 62, 70, 75, 68],
+      emotions: [
+        { name: "Longing", value: 88 },
+        { name: "Hope", value: 74 },
+        { name: "Melancholy", value: 61 },
+        { name: "Joy", value: 52 },
+        { name: "Tension", value: 38 },
+        { name: "Wonder", value: 29 }
+      ],
+      artists: [
+        { name: "Nora Vael", initials: "NV", meta: "Indie Electronic", bars: [30, 35, 42, 38, 50, 55, 48, 60, 65, 58, 70, 72], stats: [["2.4M", "Followers"], ["+18%", "30d growth"], ["0.87", "Score"]] },
+        { name: "Caelan Ross", initials: "CR", meta: "Bedroom Pop", bars: [20, 25, 30, 28, 38, 45, 42, 55, 60, 58, 68, 75], stats: [["340K", "Followers"], ["+41%", "30d growth"], ["0.94", "Score"]] }
+      ],
+      activity: [
+        { text: "<strong>Midnight Archive</strong> crossed 87% viral confidence", time: "2m ago" },
+        { text: "New gem discovered: <strong>Glass Cartography</strong> - score 98.4", time: "14m ago" },
+        { text: "Model retrain complete - accuracy improved to <strong>84.2%</strong>", time: "6h ago" },
+        { text: "<strong>Indie Folk</strong> genre momentum rising - 3 songs flagged", time: "8h ago" },
+        { text: "A/B test concluded - Hybrid model wins by <strong>+12% NDCG</strong>", time: "1d ago" }
+      ]
+    };
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+
+    function renderNav() {
+      Object.entries(data.nav).forEach(([group, items]) => {
+        const container = document.querySelector(`[data-nav="${group}"]`);
+        const heading = document.createElement("div");
+        heading.className = "nav-heading";
+        heading.textContent = group;
+        container.appendChild(heading);
+
+        items.forEach((item) => {
+          const button = document.createElement("button");
+          button.className = `nav-button${item.active ? " is-active" : ""}`;
+          button.type = "button";
+          button.innerHTML = `
+            <span class="nav-mark" aria-hidden="true"></span>
+            <span class="nav-text">${item.label}</span>
+            ${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ""}
+          `;
+          button.addEventListener("click", () => {
+            document.querySelectorAll(".nav-button").forEach((nav) => nav.classList.remove("is-active"));
+            button.classList.add("is-active");
+            $("#pageTitle").textContent = item.label;
+          });
+          container.appendChild(button);
+        });
+      });
+    }
+
+    function renderSignals() {
+      $("#signalGrid").innerHTML = data.signals.map((signal) => `
+        <article class="signal-video">
+          <video muted autoplay loop playsinline preload="metadata" poster="${signal.poster}" src="${signal.src}"></video>
+          <div class="signal-label">${signal.label}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderMetrics() {
+      $("#metricGrid").innerHTML = data.metrics.map((metric) => `
+        <article class="metric-card">
+          <div class="mono-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}</div>
+          <div class="metric-note">${metric.note}</div>
+          <div class="meter"><div class="meter-fill" style="--value:${metric.meter}"></div></div>
+        </article>
+      `).join("");
+    }
+
+    function renderWave() {
+      const heights = [20, 35, 55, 40, 65, 80, 55, 70, 85, 60, 45, 70, 90, 75, 55, 40, 65, 80, 50, 35, 60, 75, 55, 40, 30, 50, 65, 45, 30, 20, 40, 55];
+      $("#waveBars").innerHTML = heights.map((height, index) => {
+        const state = index >= 10 && index <= 16 ? " is-active" : index < 10 ? " is-played" : "";
+        return `<span class="wave-bar${state}" style="--height:${height}%"></span>`;
+      }).join("");
+    }
+
+    function renderSongs() {
+      $("#songList").innerHTML = data.songs.map((song, index) => `
+        <article class="song-row">
+          <div class="song-index">${String(index + 1).padStart(2, "0")}</div>
+          <div>
+            <div class="song-title">${song.title}</div>
+            <div class="song-artist">${song.artist}</div>
+          </div>
+          <div class="song-meter"><span style="--value:${song.score / 100}"></span></div>
+          <div class="song-score">${song.score}%</div>
+        </article>
+      `).join("");
+    }
+
+    function renderGems() {
+      $("#gemList").innerHTML = data.gems.map((gem) => `
+        <article class="gem-row">
+          <div>
+            <div class="gem-title">${gem.title}</div>
+            <div class="gem-meta">${gem.meta}</div>
+          </div>
+          <div class="score-pill">${gem.score}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderTrends() {
+      $("#trendTags").innerHTML = data.genres.map((genre, index) => `
+        <button class="trend-tag${index === 0 ? " is-selected" : ""}" type="button">${genre}</button>
+      `).join("");
+
+      document.querySelectorAll(".trend-tag").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".trend-tag").forEach((tag) => tag.classList.remove("is-selected"));
+          button.classList.add("is-selected");
+        });
+      });
+
+      const peaks = new Set([9, 14, 18]);
+      $("#timeline").innerHTML = data.timeline.map((value, index) => `
+        <div class="timeline-segment${peaks.has(index) ? " is-peak" : ""}">
+          <span class="timeline-bar" style="--height:${value}%"></span>
+        </div>
+      `).join("");
+    }
+
+    function renderEmotions() {
+      $("#emotionList").innerHTML = data.emotions.map((emotion) => `
+        <div class="emotion-row">
+          <div class="emotion-name">${emotion.name}</div>
+          <div class="emotion-track"><span style="--value:${emotion.value / 100}"></span></div>
+          <div class="emotion-value">${emotion.value}%</div>
+        </div>
+      `).join("");
+    }
+
+    function renderArtists() {
+      $("#artistList").innerHTML = data.artists.map((artist) => `
+        <article class="artist-card">
+          <div class="artist-top">
+            <div class="artist-avatar">${artist.initials}</div>
+            <div>
+              <div class="artist-name">${artist.name}</div>
+              <div class="artist-meta">${artist.meta}</div>
+            </div>
+          </div>
+          <div class="trajectory-bars">
+            ${artist.bars.map((height) => `<span class="trajectory-bar${height > 50 ? " is-up" : ""}" style="--height:${height}%"></span>`).join("")}
+          </div>
+          <div class="artist-stats">
+            ${artist.stats.map(([value, label]) => `<div class="artist-stat"><strong>${value}</strong><span>${label}</span></div>`).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderActivity() {
+      $("#activityList").innerHTML = data.activity.map((item, index) => `
+        <article class="activity-row">
+          <span class="activity-dot" style="background:${index % 3 === 1 ? "var(--purple)" : index % 3 === 2 ? "var(--green)" : "var(--yellow)"}"></span>
+          <div class="activity-copy">${item.text}</div>
+          <div class="time">${item.time}</div>
+        </article>
+      `).join("");
+    }
+
+    function activateVideos() {
+      document.querySelectorAll("video").forEach((video) => {
+        video.muted = true;
+        video.playsInline = true;
+        const play = video.play();
+        if (play && play.catch) play.catch(() => {});
+      });
+    }
+
+    function init() {
+      renderNav();
+      renderSignals();
+      renderMetrics();
+      renderWave();
+      renderSongs();
+      renderGems();
+      renderTrends();
+      renderEmotions();
+      renderArtists();
+      renderActivity();
+
+      requestAnimationFrame(() => {
+        document.body.classList.add("is-ready");
+        activateVideos();
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) activateVideos();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

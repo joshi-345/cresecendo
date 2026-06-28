@@ -1,0 +1,80 @@
+# ========================
+# Crescendo .gitignore
+# ========================
+
+# --- Node.js / Frontend ---
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+*.tsbuildinfo
+
+# --- Python / Backend & ML ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Environment Variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/.env.local
+backend/.env
+
+# --- ML Pipeline ---
+ml_pipeline/data/raw/*
+!ml_pipeline/data/raw/.gitkeep
+ml_pipeline/saved_models/*
+!ml_pipeline/saved_models/.gitkeep
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.h5
+*.joblib
+wandb/
+mlruns/
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- IDEs ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Testing ---
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+.coverage
+.coverage.*
+
+# --- Misc ---
+*.bak
+*.tmp
+*.temp
