@@ -32,7 +32,7 @@
   }
 
   * {
-    @apply border-border;
+    @apply border-surface-border;
   }
 
   html {

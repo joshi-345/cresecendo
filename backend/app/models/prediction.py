@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import String, Float, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.db.database import Base
 
@@ -16,13 +16,13 @@ class Prediction(Base):
     __tablename__ = "predictions"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid, primary_key=True, default=uuid.uuid4
     )
     song_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("songs.id"), nullable=False, index=True
+        Uuid, ForeignKey("songs.id"), nullable=False, index=True
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        Uuid, ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Prediction results

@@ -2,7 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-const data = [
+const defaultData = [
   { name: "Jan", lunaRay: 120, echowaves: 20, theDrift: 80, ariaMoon: 200 },
   { name: "Feb", lunaRay: 150, echowaves: 35, theDrift: 95, ariaMoon: 220 },
   { name: "Mar", lunaRay: 200, echowaves: 60, theDrift: 110, ariaMoon: 250 },
@@ -11,10 +11,26 @@ const data = [
   { name: "Jun", lunaRay: 420, echowaves: 380, theDrift: 170, ariaMoon: 340 },
 ];
 
-export function LineChartComponent() {
+const defaultLines = [
+  { key: "lunaRay", name: "Luna Ray", color: "#7c5cfc" },
+  { key: "echowaves", name: "Echo Waves", color: "#06d6a0" },
+  { key: "theDrift", name: "The Drift", color: "#ff006e" },
+  { key: "ariaMoon", name: "Aria Moon", color: "#ffbe0b" },
+];
+
+interface LineChartProps {
+  data?: Record<string, unknown>[];
+  lines?: { key: string; name: string; color: string }[];
+  height?: number;
+}
+
+export function LineChartComponent({ data, lines, height = 300 }: LineChartProps) {
+  const chartData = data || defaultData;
+  const chartLines = lines || defaultLines;
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
@@ -28,10 +44,17 @@ export function LineChartComponent() {
           }}
         />
         <Legend iconSize={10} wrapperStyle={{ fontSize: "12px", color: "#6b7280" }} />
-        <Line type="monotone" dataKey="lunaRay" name="Luna Ray" stroke="#7c5cfc" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="echowaves" name="Echo Waves" stroke="#06d6a0" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="theDrift" name="The Drift" stroke="#ff006e" strokeWidth={2} dot={false} />
-        <Line type="monotone" dataKey="ariaMoon" name="Aria Moon" stroke="#ffbe0b" strokeWidth={2} dot={false} />
+        {chartLines.map((line) => (
+          <Line
+            key={line.key}
+            type="monotone"
+            dataKey={line.key}
+            name={line.name}
+            stroke={line.color}
+            strokeWidth={2}
+            dot={false}
+          />
+        ))}
       </LineChart>
     </ResponsiveContainer>
   );

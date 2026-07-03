@@ -4,38 +4,85 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Palette, Search, Loader2 } from "lucide-react";
 import { RadarChartComponent } from "@/components/charts/radar-chart";
+import { apiPost } from "@/lib/api";
+import { useToastStore } from "@/components/ui/toast";
 
-const emotions = [
-  { name: "Happiness", value: 72, color: "#ffbe0b" },
-  { name: "Sadness", value: 45, color: "#3a86ff" },
-  { name: "Anger", value: 18, color: "#ff006e" },
-  { name: "Love", value: 88, color: "#ff6b6b" },
-  { name: "Fear", value: 12, color: "#8338ec" },
-  { name: "Hope", value: 65, color: "#06d6a0" },
-  { name: "Nostalgia", value: 58, color: "#fb5607" },
-  { name: "Excitement", value: 79, color: "#7c5cfc" },
-];
+interface EmotionData {
+  name: string;
+  value: number;
+  color: string;
+}
 
-const lyricsExcerpts = [
-  { text: "Dancing under neon lights, we own the night", emotion: "Happiness", confidence: 0.94 },
-  { text: "I still remember every word you said", emotion: "Nostalgia", confidence: 0.87 },
-  { text: "My heart beats only for you, forever true", emotion: "Love", confidence: 0.92 },
-  { text: "We rise above the storm, unbroken and reborn", emotion: "Hope", confidence: 0.89 },
-];
+interface LyricAnalysis {
+  text: string;
+  emotion: string;
+  confidence: number;
+}
+
+const emotionColors: Record<string, string> = {
+  Happiness: "#ffbe0b",
+  Sadness: "#3a86ff",
+  Anger: "#ff006e",
+  Love: "#ff6b6b",
+  Fear: "#8338ec",
+  Hope: "#06d6a0",
+  Nostalgia: "#fb5607",
+  Excitement: "#7c5cfc",
+  Joy: "#ffbe0b",
+  Melancholy: "#3a86ff",
+};
 
 export default function EmotionCanvasPage() {
   const [query, setQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showResults, setShowResults] = useState(true);
+  const [showResults, setShowResults] = useState(false);
+  const [emotions, setEmotions] = useState<EmotionData[]>([]);
+  const [lyricLines, setLyricLines] = useState<LyricAnalysis[]>([]);
+  const [overallSentiment, setOverallSentiment] = useState("");
+  const addToast = useToastStore((s) => s.addToast);
 
-  const handleAnalyze = (e: React.FormEvent) => {
+  const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!query.trim()) {
+      addToast("Please enter lyrics or a song title to analyze.", "warning");
+      return;
+    }
+
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    setShowResults(false);
+    try {
+      const res = await apiPost<any>("/emotions/analyze", { lyrics: query });
+      setOverallSentiment(res.overall_sentiment || "Mixed");
+      setEmotions(
+        (res.emotions || []).map((em: any) => ({
+          name: em.name,
+          value: Math.round(em.value),
+          color: em.color || emotionColors[em.name] || "#7c5cfc",
+        }))
+      );
+      setLyricLines(
+        (res.lyric_analysis || []).map((line: any) => ({
+          text: line.text,
+          emotion: line.emotion,
+          confidence: line.confidence,
+        }))
+      );
       setShowResults(true);
-    }, 2000);
+      addToast("Emotion analysis complete!", "success");
+    } catch (err: any) {
+      console.error("Emotion analysis failed:", err);
+      const msg = err?.response?.data?.detail || "Emotion analysis failed. Please try again.";
+      addToast(msg, "error");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
+
+  // Transform emotions for the radar chart
+  const radarData = emotions.map((em) => ({
+    subject: em.name,
+    value: em.value,
+  }));
 
   return (
     <div className="space-y-8">
@@ -55,15 +102,15 @@ export default function EmotionCanvasPage() {
         <div className="flex gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
+            <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter a song title, paste lyrics, or Spotify URL..."
-              className="w-full rounded-xl border border-surface-border bg-surface-elevated py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition-colors focus:border-brand-500"
+              placeholder="Paste song lyrics here for emotion analysis..."
+              rows={3}
+              className="w-full rounded-xl border border-surface-border bg-surface-elevated py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition-colors focus:border-brand-500 resize-none"
             />
           </div>
-          <button type="submit" disabled={isAnalyzing} className="btn-glow flex items-center gap-2 disabled:opacity-50">
+          <button type="submit" disabled={isAnalyzing} className="btn-glow flex items-center gap-2 self-end disabled:opacity-50">
             {isAnalyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
             Analyze
           </button>
@@ -73,6 +120,23 @@ export default function EmotionCanvasPage() {
       {/* Results */}
       {showResults && (
         <div className="grid gap-6 lg:grid-cols-2">
+          {/* Overall Sentiment */}
+          {overallSentiment && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card flex items-center justify-between p-6 lg:col-span-2"
+            >
+              <div>
+                <h3 className="text-sm font-medium text-gray-400">Overall Sentiment</h3>
+                <p className="mt-1 text-2xl font-bold text-white">{overallSentiment}</p>
+              </div>
+              <div className="rounded-xl bg-brand-500/10 px-4 py-2">
+                <span className="text-sm font-semibold text-brand-400">{emotions.length} emotions detected</span>
+              </div>
+            </motion.div>
+          )}
+
           {/* Emotion Radar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -80,7 +144,7 @@ export default function EmotionCanvasPage() {
             className="glass-card p-6"
           >
             <h3 className="mb-4 text-lg font-semibold text-white">Emotion Spectrum</h3>
-            <RadarChartComponent />
+            <RadarChartComponent data={radarData.length > 0 ? radarData : undefined} />
           </motion.div>
 
           {/* Emotion Bars */}
@@ -113,32 +177,34 @@ export default function EmotionCanvasPage() {
           </motion.div>
 
           {/* Lyric Analysis */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card p-6 lg:col-span-2"
-          >
-            <h3 className="mb-4 text-lg font-semibold text-white">Lyric-Level Analysis</h3>
-            <div className="space-y-3">
-              {lyricsExcerpts.map((line, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-elevated/50 p-4"
-                >
-                  <p className="flex-1 text-sm italic text-gray-300">&ldquo;{line.text}&rdquo;</p>
-                  <div className="ml-4 flex items-center gap-3">
-                    <span className="rounded-lg bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-400">
-                      {line.emotion}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {(line.confidence * 100).toFixed(0)}%
-                    </span>
+          {lyricLines.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card p-6 lg:col-span-2"
+            >
+              <h3 className="mb-4 text-lg font-semibold text-white">Lyric-Level Analysis</h3>
+              <div className="space-y-3">
+                {lyricLines.map((line, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-xl border border-surface-border bg-surface-elevated/50 p-4"
+                  >
+                    <p className="flex-1 text-sm italic text-gray-300">&ldquo;{line.text}&rdquo;</p>
+                    <div className="ml-4 flex items-center gap-3">
+                      <span className="rounded-lg bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-400">
+                        {line.emotion}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {(line.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       )}
     </div>

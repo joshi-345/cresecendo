@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { ToastContainer } from "@/components/ui/toast";
 import "./globals.css";
 
 // --- Fonts ---
@@ -80,6 +81,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ToastContainer />
         </ThemeProvider>
       </body>
     </html>

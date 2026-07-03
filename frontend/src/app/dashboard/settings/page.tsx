@@ -2,15 +2,32 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Settings, User, Key, Bell, Palette, Shield, Save, CreditCard } from "lucide-react";
+import { Settings, User, Key, Bell, Palette, Shield, Save, CreditCard, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { useToastStore } from "@/components/ui/toast";
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState("profile");
   const [predictionsUsed, setPredictionsUsed] = useState(0);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
+
+  // Profile form state — initialized from auth store
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileRole, setProfileRole] = useState("artist");
+  const [profileTimezone, setProfileTimezone] = useState("UTC+0 (GMT)");
+
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.name || "");
+      setProfileEmail(user.email || "");
+      setProfileRole(user.role || "artist");
+    }
+  }, [user]);
 
   useEffect(() => {
     async function fetchQuotaUsage() {
@@ -44,7 +61,7 @@ export default function SettingsPage() {
       }
     } catch (err) {
       console.error("Billing operation failed:", err);
-      alert("Billing request failed. Please try again later.");
+      addToast("Billing request failed. Please try again later.", "error");
     } finally {
       setIsRedirecting(false);
     }
@@ -104,32 +121,69 @@ export default function SettingsPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">Full Name</label>
-                  <input type="text" defaultValue="John Doe" className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500" />
+                  <input
+                    type="text"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500"
+                  />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">Email</label>
-                  <input type="email" defaultValue="john@example.com" className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500" />
+                  <input
+                    type="email"
+                    value={profileEmail}
+                    onChange={(e) => setProfileEmail(e.target.value)}
+                    className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500"
+                  />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">Role</label>
-                  <select className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500">
-                    <option>Artist</option>
-                    <option>Record Label</option>
-                    <option>Producer</option>
-                    <option>Marketing</option>
+                  <select
+                    value={profileRole}
+                    onChange={(e) => setProfileRole(e.target.value)}
+                    className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500"
+                  >
+                    <option value="artist">Artist</option>
+                    <option value="label">Record Label</option>
+                    <option value="producer">Producer</option>
+                    <option value="marketer">Marketing</option>
                   </select>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">Time Zone</label>
-                  <select className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500">
+                  <select
+                    value={profileTimezone}
+                    onChange={(e) => setProfileTimezone(e.target.value)}
+                    className="w-full rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-white outline-none focus:border-brand-500"
+                  >
+                    <option>UTC-8 (PST)</option>
                     <option>UTC-5 (EST)</option>
                     <option>UTC+0 (GMT)</option>
+                    <option>UTC+1 (CET)</option>
                     <option>UTC+5:30 (IST)</option>
+                    <option>UTC+8 (SGT)</option>
+                    <option>UTC+9 (JST)</option>
                   </select>
                 </div>
               </div>
-              <button className="btn-glow flex items-center gap-2">
-                <Save className="h-4 w-4" /> Save Changes
+              <button
+                onClick={async () => {
+                  setIsSavingProfile(true);
+                  try {
+                    await apiPut("/auth/profile", { name: profileName, email: profileEmail, role: profileRole });
+                    addToast("Profile updated successfully!", "success");
+                  } catch (err) {
+                    addToast("Failed to update profile.", "error");
+                  } finally {
+                    setIsSavingProfile(false);
+                  }
+                }}
+                disabled={isSavingProfile}
+                className="btn-glow flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Save Changes
               </button>
             </div>
           )}

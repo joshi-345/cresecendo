@@ -3,6 +3,7 @@ Crescendo — Application Configuration
 Loads environment variables with Pydantic Settings.
 """
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 from typing import List
 
@@ -15,6 +16,18 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     APP_ENV: str = "development"
     DEBUG: bool = True
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug(cls, value):
+        """Accept common environment names when DEBUG is set by the shell."""
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "production", "prod"}:
+                return False
+            if normalized in {"development", "dev"}:
+                return True
+        return value
 
     # --- Server ---
     BACKEND_HOST: str = "0.0.0.0"
@@ -60,6 +73,9 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_SECRET: str = ""
     SPOTIFY_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/spotify/callback"
 
+    # --- Genius ---
+    GENIUS_ACCESS_TOKEN: str = ""
+
     # --- Stripe ---
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
@@ -68,11 +84,18 @@ class Settings(BaseSettings):
     STRIPE_PORTAL_RETURN_URL: str = "http://localhost:3000/dashboard/settings"
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # --- Pinecone ---
+    PINECONE_API_KEY: str = ""
+    PINECONE_ENVIRONMENT: str = "us-east-1"
+    PINECONE_INDEX_NAME: str = "crescendo-embeddings"
 
 
     # --- ML ---
     MODEL_PATH: str = "./ml_pipeline/saved_models"
     MODEL_VERSION: str = "v1.0.0"
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_SENTIMENT_MODEL: str = "llama3.2:1b"
+    OLLAMA_SENTIMENT_TIMEOUT: float = 45.0
 
     model_config = {
         "env_file": ".env",

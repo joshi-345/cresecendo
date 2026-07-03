@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "recharts";
 
-const data = [
+const defaultData = [
   { subject: "Happiness", value: 72 },
   { subject: "Sadness", value: 45 },
   { subject: "Anger", value: 18 },
@@ -21,10 +21,18 @@ const data = [
   { subject: "Excitement", value: 79 },
 ];
 
-export function RadarChartComponent() {
+interface RadarChartProps {
+  data?: { subject: string; value: number }[];
+  color?: string;
+  height?: number;
+}
+
+export function RadarChartComponent({ data, color = "#7c5cfc", height = 300 }: RadarChartProps) {
+  const chartData = data || defaultData;
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+    <ResponsiveContainer width="100%" height={height}>
+      <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
         <PolarGrid stroke="rgba(255,255,255,0.08)" />
         <PolarAngleAxis dataKey="subject" stroke="#6b7280" fontSize={11} />
         <PolarRadiusAxis stroke="rgba(255,255,255,0.05)" fontSize={10} />
@@ -40,8 +48,8 @@ export function RadarChartComponent() {
         <Radar
           name="Score"
           dataKey="value"
-          stroke="#7c5cfc"
-          fill="#7c5cfc"
+          stroke={color}
+          fill={color}
           fillOpacity={0.2}
           strokeWidth={2}
         />

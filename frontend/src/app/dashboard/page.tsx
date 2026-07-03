@@ -87,6 +87,20 @@ export default function DashboardPage() {
       : kpi
   ));
 
+  // Derive the latest virality score from the most recent prediction
+  const latestScore = predictions.length > 0
+    ? predictions[0]?.prediction?.viral_score ?? 0
+    : 0;
+
+  // Build chart data from prediction history
+  const predictionChartData = predictions.length > 0
+    ? predictions.slice().reverse().map((p: any, i: number) => ({
+        name: `#${i + 1}`,
+        predictions: p.prediction?.viral_score ?? 0,
+        accuracy: p.prediction?.confidence_score ?? 0,
+      }))
+    : undefined;
+
   return (
     <div className="space-y-8">
       <motion.header initial="hidden" animate="visible" variants={fadeUp} custom={0} className="overflow-hidden rounded-2xl border border-[#2d2d2d] bg-[#0f0f0f] p-6 md:p-8">
@@ -104,11 +118,11 @@ export default function DashboardPage() {
           <div className="rounded-xl score-gradient p-5">
             <div className="text-xs font-black uppercase tracking-[0.18em] text-white/75">Latest confidence</div>
             <div className="mt-3 flex items-end gap-2">
-              <span className="score-count font-mono text-6xl font-black text-white">87</span>
-              <span className="mb-2 text-xl font-black text-white">/100</span>
+              <span className="score-count font-mono text-6xl font-black text-white">{latestScore || "—"}</span>
+              {latestScore > 0 && <span className="mb-2 text-xl font-black text-white">/100</span>}
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20">
-              <div className="h-full w-[87%] rounded-full bg-white" />
+              <div className="h-full rounded-full bg-white transition-all duration-700" style={{ width: `${latestScore}%` }} />
             </div>
           </div>
         </div>
@@ -158,7 +172,13 @@ export default function DashboardPage() {
               View All <ArrowUpRight className="h-4 w-4" />
             </button>
           </div>
-          <AreaChartComponent />
+          <AreaChartComponent
+            data={predictionChartData}
+            dataKeys={predictionChartData ? [
+              { key: "predictions", color: "#7c5cfc" },
+              { key: "accuracy", color: "#06d6a0" },
+            ] : undefined}
+          />
         </motion.article>
 
         <motion.article

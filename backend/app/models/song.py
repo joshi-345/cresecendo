@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import String, Float, DateTime, Integer, JSON
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.db.database import Base
 
@@ -16,7 +16,7 @@ class Song(Base):
     __tablename__ = "songs"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid, primary_key=True, default=uuid.uuid4
     )
     spotify_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(500), nullable=False)

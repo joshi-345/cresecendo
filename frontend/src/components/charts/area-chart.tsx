@@ -2,7 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const data = [
+const defaultData = [
   { name: "Jan", predictions: 240, accuracy: 85 },
   { name: "Feb", predictions: 310, accuracy: 87 },
   { name: "Mar", predictions: 280, accuracy: 89 },
@@ -12,19 +12,31 @@ const data = [
   { name: "Jul", predictions: 480, accuracy: 94 },
 ];
 
-export function AreaChartComponent() {
+interface AreaChartProps {
+  data?: Record<string, unknown>[];
+  dataKeys?: { key: string; color: string }[];
+  height?: number;
+}
+
+const defaultKeys = [
+  { key: "predictions", color: "#7c5cfc" },
+  { key: "accuracy", color: "#06d6a0" },
+];
+
+export function AreaChartComponent({ data, dataKeys, height = 300 }: AreaChartProps) {
+  const chartData = data || defaultData;
+  const keys = dataKeys || defaultKeys;
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={height}>
+      <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
         <defs>
-          <linearGradient id="colorPredictions" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#7c5cfc" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#7c5cfc" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#06d6a0" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#06d6a0" stopOpacity={0} />
-          </linearGradient>
+          {keys.map((k) => (
+            <linearGradient key={k.key} id={`color-${k.key}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={k.color} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={k.color} stopOpacity={0} />
+            </linearGradient>
+          ))}
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
         <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
@@ -38,8 +50,17 @@ export function AreaChartComponent() {
             fontSize: "12px",
           }}
         />
-        <Area type="monotone" dataKey="predictions" stroke="#7c5cfc" fillOpacity={1} fill="url(#colorPredictions)" strokeWidth={2} />
-        <Area type="monotone" dataKey="accuracy" stroke="#06d6a0" fillOpacity={1} fill="url(#colorAccuracy)" strokeWidth={2} />
+        {keys.map((k) => (
+          <Area
+            key={k.key}
+            type="monotone"
+            dataKey={k.key}
+            stroke={k.color}
+            fillOpacity={1}
+            fill={`url(#color-${k.key})`}
+            strokeWidth={2}
+          />
+        ))}
       </AreaChart>
     </ResponsiveContainer>
   );

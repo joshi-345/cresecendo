@@ -1,21 +1,65 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Globe, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Globe, Calendar, Loader2 } from "lucide-react";
 import { AreaChartComponent } from "@/components/charts/area-chart";
+import { apiGet } from "@/lib/api";
+import { useToastStore } from "@/components/ui/toast";
 
-const trendingGenres = [
-  { name: "Afrobeats", direction: "up", change: "+34.2%", listeners: "89M", color: "text-accent-cyan" },
-  { name: "Hyperpop", direction: "up", change: "+28.7%", listeners: "12M", color: "text-accent-cyan" },
-  { name: "Latin Pop", direction: "up", change: "+22.1%", listeners: "156M", color: "text-accent-cyan" },
-  { name: "Lo-fi", direction: "down", change: "-5.3%", listeners: "45M", color: "text-accent-coral" },
-  { name: "Classic Rock", direction: "down", change: "-8.1%", listeners: "78M", color: "text-accent-coral" },
-  { name: "K-Pop", direction: "up", change: "+18.4%", listeners: "198M", color: "text-accent-cyan" },
-  { name: "Neo-Soul", direction: "up", change: "+41.6%", listeners: "23M", color: "text-accent-cyan" },
-  { name: "Drill", direction: "down", change: "-12.7%", listeners: "34M", color: "text-accent-coral" },
-];
+interface GenreTrend {
+  name: string;
+  direction: "up" | "down";
+  change: string;
+  listeners: number;
+}
+
+interface TimelinePoint {
+  month: string;
+  value: number;
+}
+
+const formatListeners = (n: number): string => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(0)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return n.toString();
+};
 
 export default function TrendExplorerPage() {
+  const [period, setPeriod] = useState("30d");
+  const [region, setRegion] = useState("global");
+  const [genres, setGenres] = useState<GenreTrend[]>([]);
+  const [timeline, setTimeline] = useState<TimelinePoint[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const addToast = useToastStore((s) => s.addToast);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [genreRes, timelineRes] = await Promise.all([
+        apiGet<any>("/trends/genres", { period, region }),
+        apiGet<any>("/trends/timeline", { period }),
+      ]);
+      setGenres(genreRes.genres || []);
+      setTimeline(timelineRes.data || []);
+    } catch (err) {
+      console.error("Failed to load trends:", err);
+      addToast("Failed to load trend data. Please try again.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [period, region, addToast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Transform timeline data for the area chart
+  const chartData = timeline.map((pt) => ({
+    name: pt.month,
+    popularity: pt.value,
+  }));
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -33,22 +77,31 @@ export default function TrendExplorerPage() {
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface-card px-4 py-2">
           <Calendar className="h-4 w-4 text-gray-500" />
-          <select className="bg-transparent text-sm text-gray-300 outline-none">
-            <option>Last 30 Days</option>
-            <option>Last 90 Days</option>
-            <option>Last 6 Months</option>
-            <option>Last Year</option>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            className="bg-transparent text-sm text-gray-300 outline-none"
+          >
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="6m">Last 6 Months</option>
+            <option value="1y">Last Year</option>
           </select>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface-card px-4 py-2">
           <Globe className="h-4 w-4 text-gray-500" />
-          <select className="bg-transparent text-sm text-gray-300 outline-none">
-            <option>Global</option>
-            <option>North America</option>
-            <option>Europe</option>
-            <option>Asia Pacific</option>
-            <option>Latin America</option>
-            <option>Africa</option>
+          <select
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            className="bg-transparent text-sm text-gray-300 outline-none"
+          >
+            <option value="global">Global</option>
+            <option value="na">North America</option>
+            <option value="eu">Europe</option>
+            <option value="apac">Asia Pacific</option>
+            <option value="latam">Latin America</option>
+            <option value="africa">Africa</option>
           </select>
         </div>
       </div>
@@ -57,39 +110,61 @@ export default function TrendExplorerPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6">
         <h3 className="mb-2 text-lg font-semibold text-white">Genre Popularity Timeline</h3>
         <p className="mb-6 text-sm text-gray-400">Relative interest over time across streaming platforms</p>
-        <AreaChartComponent />
+        {isLoading ? (
+          <div className="flex h-[300px] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+          </div>
+        ) : (
+          <AreaChartComponent
+            data={chartData}
+            dataKeys={[{ key: "popularity", color: "#7c5cfc" }]}
+          />
+        )}
       </motion.div>
 
       {/* Genre Grid */}
       <div>
         <h3 className="mb-4 text-lg font-semibold text-white">Genre Movement</h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {trendingGenres.map((genre, i) => (
-            <motion.div
-              key={genre.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="glass-card p-4 transition-all duration-300 hover:border-brand-500/20"
-            >
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-white">{genre.name}</h4>
-                {genre.direction === "up" ? (
-                  <TrendingUp className={`h-5 w-5 ${genre.color}`} />
-                ) : (
-                  <TrendingDown className={`h-5 w-5 ${genre.color}`} />
-                )}
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="glass-card animate-pulse p-4">
+                <div className="h-4 w-24 rounded bg-surface-border" />
+                <div className="mt-4 h-3 w-16 rounded bg-surface-border" />
               </div>
-              <div className="mt-3 flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-gray-500">Monthly Listeners</p>
-                  <p className="text-sm font-medium text-white">{genre.listeners}</p>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {genres.map((genre, i) => (
+              <motion.div
+                key={genre.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
+                className="glass-card p-4 transition-all duration-300 hover:border-brand-500/20"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-white">{genre.name}</h4>
+                  {genre.direction === "up" ? (
+                    <TrendingUp className="h-5 w-5 text-accent-cyan" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-accent-coral" />
+                  )}
                 </div>
-                <span className={`text-sm font-bold ${genre.color}`}>{genre.change}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div className="mt-3 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500">Monthly Listeners</p>
+                    <p className="text-sm font-medium text-white">{formatListeners(genre.listeners)}</p>
+                  </div>
+                  <span className={`text-sm font-bold ${genre.direction === "up" ? "text-accent-cyan" : "text-accent-coral"}`}>
+                    {genre.change}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

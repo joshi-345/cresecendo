@@ -10,7 +10,7 @@ import {
   Palette,
   Eye,
   Lightbulb,
-  Waveform,
+  AudioWaveform,
   Settings,
   Music,
   X,
@@ -29,7 +29,7 @@ const navItems = [
   { label: "Emotion Canvas", href: "/dashboard/emotion-canvas", icon: Palette },
   { label: "Trend Explorer", href: "/dashboard/trend-explorer", icon: TrendingUp },
   { label: "Recommendations", href: "/dashboard/recommendations", icon: Lightbulb },
-  { label: "Audio Intelligence", href: "/dashboard/audio-intelligence", icon: Waveform },
+  { label: "Audio Intelligence", href: "/dashboard/audio-intelligence", icon: AudioWaveform },
 ];
 
 const bottomItems = [
