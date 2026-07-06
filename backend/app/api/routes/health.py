@@ -28,13 +28,13 @@ async def readiness_check():
     """Readiness probe — checks all dependencies."""
     services = {}
 
-    # Check PostgreSQL connection
+    # Check Database connection
     try:
         async with async_session_factory() as session:
             await session.execute(text("SELECT 1"))
-        services["postgres"] = "connected"
+        services["database"] = "connected"
     except Exception as e:
-        services["postgres"] = f"error: {str(e)[:100]}"
+        services["database"] = f"error: {str(e)[:100]}"
 
     # Check ML models loaded
     try:
@@ -48,7 +48,7 @@ async def readiness_check():
         services["ml_models"] = f"error: {str(e)[:100]}"
 
     all_healthy = (
-        services.get("postgres") == "connected"
+        services.get("database") == "connected"
         and "loaded" in services.get("ml_models", "")
     )
 

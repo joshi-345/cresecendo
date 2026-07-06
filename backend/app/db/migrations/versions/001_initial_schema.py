@@ -9,7 +9,6 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "001_initial"
@@ -22,7 +21,7 @@ def upgrade() -> None:
     # --- Users ---
     op.create_table(
         "users",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("email", sa.String(255), unique=True, nullable=False),
         sa.Column("hashed_password", sa.String(255), nullable=False),
@@ -41,15 +40,15 @@ def upgrade() -> None:
     # --- Artists ---
     op.create_table(
         "artists",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("spotify_id", sa.String(255), unique=True, nullable=True),
         sa.Column("name", sa.String(500), nullable=False),
-        sa.Column("genres", postgresql.ARRAY(sa.String()), nullable=True),
+        sa.Column("genres", sa.JSON(), nullable=True),
         sa.Column("followers", sa.Integer(), server_default="0"),
         sa.Column("monthly_listeners", sa.Integer(), server_default="0"),
         sa.Column("popularity", sa.Integer(), server_default="0"),
         sa.Column("image_url", sa.String(500), nullable=True),
-        sa.Column("growth_data", postgresql.JSON(), nullable=True),
+        sa.Column("growth_data", sa.JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
@@ -59,7 +58,7 @@ def upgrade() -> None:
     # --- Songs ---
     op.create_table(
         "songs",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("spotify_id", sa.String(255), unique=True, nullable=True),
         sa.Column("title", sa.String(500), nullable=False),
         sa.Column("artist_name", sa.String(500), nullable=False),
@@ -81,7 +80,7 @@ def upgrade() -> None:
         # Metrics
         sa.Column("streams", sa.Integer(), nullable=True),
         sa.Column("popularity", sa.Integer(), nullable=True),
-        sa.Column("extra_data", postgresql.JSON(), nullable=True),
+        sa.Column("extra_data", sa.JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
     op.create_index("ix_songs_spotify_id", "songs", ["spotify_id"], unique=True)
@@ -90,16 +89,16 @@ def upgrade() -> None:
     # --- Predictions ---
     op.create_table(
         "predictions",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column(
             "song_id",
-            postgresql.UUID(as_uuid=True),
+            sa.Uuid(),
             sa.ForeignKey("songs.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
             "user_id",
-            postgresql.UUID(as_uuid=True),
+            sa.Uuid(),
             sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -108,7 +107,7 @@ def upgrade() -> None:
         sa.Column("confidence_score", sa.Float(), nullable=False),
         sa.Column("growth_forecast", sa.String(500), nullable=True),
         sa.Column("model_version", sa.String(50), nullable=False),
-        sa.Column("top_factors", postgresql.JSON(), nullable=True),
+        sa.Column("top_factors", sa.JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
     op.create_index("ix_predictions_song_id", "predictions", ["song_id"])
@@ -118,16 +117,16 @@ def upgrade() -> None:
     # --- Emotion Analyses ---
     op.create_table(
         "emotion_analyses",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column(
             "song_id",
-            postgresql.UUID(as_uuid=True),
+            sa.Uuid(),
             sa.ForeignKey("songs.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("overall_sentiment", sa.String(50), nullable=False),
-        sa.Column("emotions", postgresql.JSON(), nullable=False),
-        sa.Column("lyric_analysis", postgresql.JSON(), nullable=True),
+        sa.Column("emotions", sa.JSON(), nullable=False),
+        sa.Column("lyric_analysis", sa.JSON(), nullable=True),
         sa.Column("lyrics_hash", sa.String(64), nullable=True),
         sa.Column("model_version", sa.String(50), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
@@ -141,4 +140,4 @@ def downgrade() -> None:
     op.drop_table("songs")
     op.drop_table("artists")
     op.drop_table("users")
-    op.execute("DROP TYPE IF EXISTS user_role")
+    # op.execute("DROP TYPE IF EXISTS user_role") # SQLite doesn't have ENUM types like Postgres

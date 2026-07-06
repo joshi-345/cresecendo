@@ -43,46 +43,24 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # --- PostgreSQL ---
-    POSTGRES_USER: str = "crescendo"
-    POSTGRES_PASSWORD: str = "crescendo_secret"
-    POSTGRES_DB: str = "crescendo_db"
-    POSTGRES_HOST: str = "localhost"
-    POSTGRES_PORT: int = 5432
-    USE_SQLITE: bool = False
-    SQLITE_DB_PATH: str = "./crescendo_dev.db"
+    # --- Database (SQLite) ---
+    SQLITE_DB_PATH: str = "./crescendo.db"
 
     @property
     def DATABASE_URL(self) -> str:
-        if self.USE_SQLITE:
-            from pathlib import Path
-
-            sqlite_path = Path(self.SQLITE_DB_PATH)
-            if not sqlite_path.is_absolute():
-                sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
-            return f"sqlite+aiosqlite:///{sqlite_path.as_posix()}"
-        return (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
+        from pathlib import Path
+        sqlite_path = Path(self.SQLITE_DB_PATH)
+        if not sqlite_path.is_absolute():
+            sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
+        return f"sqlite+aiosqlite:///{sqlite_path.as_posix()}"
 
     @property
     def DATABASE_URL_SYNC(self) -> str:
-        if self.USE_SQLITE:
-            from pathlib import Path
-
-            sqlite_path = Path(self.SQLITE_DB_PATH)
-            if not sqlite_path.is_absolute():
-                sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
-            return f"sqlite:///{sqlite_path.as_posix()}"
-        return (
-            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
-
-
-    # --- Redis ---
-    REDIS_URL: str = "redis://localhost:6379/0"
+        from pathlib import Path
+        sqlite_path = Path(self.SQLITE_DB_PATH)
+        if not sqlite_path.is_absolute():
+            sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
+        return f"sqlite:///{sqlite_path.as_posix()}"
 
     # --- Spotify ---
     SPOTIFY_CLIENT_ID: str = ""

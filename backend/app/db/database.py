@@ -8,13 +8,10 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
-engine_kwargs = {"echo": settings.DEBUG}
-if not settings.DATABASE_URL.startswith("sqlite"):
-    engine_kwargs.update(
-        pool_size=20,
-        max_overflow=10,
-        pool_pre_ping=True,
-    )
+engine_kwargs = {
+    "echo": settings.DEBUG,
+    "connect_args": {"check_same_thread": False}
+}
 
 # --- Async Engine ---
 engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
@@ -35,9 +32,6 @@ class Base(DeclarativeBase):
 
 async def init_db() -> None:
     """Create local SQLite tables for dependency-light development."""
-    if not settings.USE_SQLITE:
-        return
-
     import app.models  # noqa: F401 - registers ORM models with Base.metadata
 
     async with engine.begin() as connection:
