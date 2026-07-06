@@ -29,6 +29,8 @@ class PredictionResponse(BaseModel):
     song_title: Optional[str] = None
     artist_name: Optional[str] = None
     prediction: ViralScore
+    predicted_genres: List[dict] = Field(default_factory=list)
+    audio_features: Optional[dict] = None
     processing_time_ms: float
 
     model_config = {"from_attributes": True}

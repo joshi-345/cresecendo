@@ -34,6 +34,24 @@ DEFAULT_AUDIO_FEATURES = {
     "duration_ms": 200000.0,
 }
 
+
+def build_audio_features_payload(source) -> dict:
+    """Return audio features in the API response shape."""
+    getter = source.get if isinstance(source, dict) else lambda key, default=None: getattr(source, key, default)
+    return {
+        "danceability": getter("danceability"),
+        "energy": getter("energy"),
+        "loudness": getter("loudness"),
+        "speechiness": getter("speechiness"),
+        "acousticness": getter("acousticness"),
+        "instrumentalness": getter("instrumentalness"),
+        "liveness": getter("liveness"),
+        "valence": getter("valence"),
+        "tempo": getter("tempo"),
+        "duration_ms": getter("duration_ms"),
+    }
+
+
 def extract_spotify_id(url_or_uri: Optional[str]) -> Optional[str]:
     """Parse Spotify track ID from URL or URI."""
     if not url_or_uri:
@@ -174,12 +192,27 @@ async def analyze_song(
         db.add(song)
         await db.flush()
         await db.refresh(song)
+    else:
+        for field, value in build_audio_features_payload(features_dict).items():
+            if value is not None:
+                setattr(song, field, value)
+        if popularity is not None:
+            song.popularity = popularity
+        song.cover_url = cover_url or song.cover_url
+        song.album = album or song.album
 
     # Step 3: Run model prediction
     result = await prediction_service.predict_virality(
         audio_features=features_dict,
         artist_metrics={"popularity": popularity or 50} if popularity is not None else None,
     )
+
+    # Step 3b: Genre prediction
+    predicted_genres = prediction_service.predict_genre(features_dict)
+
+    # Save predicted genre to song if not already set
+    if predicted_genres and not song.genre:
+        song.genre = predicted_genres[0]["genre"]
 
     # Step 4: Persist prediction outcome to DB
     prediction = Prediction(
@@ -211,6 +244,8 @@ async def analyze_song(
             model_version=prediction.model_version,
             top_factors=prediction.top_factors or [],
         ),
+        predicted_genres=predicted_genres,
+        audio_features=build_audio_features_payload(features_dict),
         processing_time_ms=processing_time,
     )
 
@@ -257,6 +292,8 @@ async def list_user_predictions(
                     model_version=p.model_version,
                     top_factors=p.top_factors or [],
                 ),
+                predicted_genres=[{"genre": s.genre, "confidence": 0}] if s.genre else [],
+                audio_features=build_audio_features_payload(s),
                 processing_time_ms=0.0,
             )
         )
@@ -299,5 +336,7 @@ async def get_prediction(prediction_id: UUID, db: DbSession, current_user: Curre
             model_version=prediction.model_version,
             top_factors=prediction.top_factors or [],
         ),
+        predicted_genres=[{"genre": song.genre, "confidence": 0}] if song.genre else [],
+        audio_features=build_audio_features_payload(song),
         processing_time_ms=0,
     )

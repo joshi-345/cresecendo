@@ -8,14 +8,16 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+engine_kwargs = {"echo": settings.DEBUG}
+if not settings.DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update(
+        pool_size=20,
+        max_overflow=10,
+        pool_pre_ping=True,
+    )
+
 # --- Async Engine ---
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    pool_size=20,
-    max_overflow=10,
-    pool_pre_ping=True,
-)
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # --- Session Factory ---
 async_session_factory = async_sessionmaker(
@@ -29,6 +31,17 @@ async_session_factory = async_sessionmaker(
 class Base(DeclarativeBase):
     """Base class for all ORM models."""
     pass
+
+
+async def init_db() -> None:
+    """Create local SQLite tables for dependency-light development."""
+    if not settings.USE_SQLITE:
+        return
+
+    import app.models  # noqa: F401 - registers ORM models with Base.metadata
+
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
 
 
 # --- Dependency ---

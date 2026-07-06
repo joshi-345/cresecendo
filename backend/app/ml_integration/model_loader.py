@@ -46,7 +46,6 @@ class ModelManager:
         model_files = {
             "viral_predictor": "viral_predictor.pkl",
             "genre_classifier": "genre_classifier.pkl",
-            "sentiment_model": "sentiment_model.pkl",
             "trend_forecaster": "trend_forecaster.pkl",
         }
 

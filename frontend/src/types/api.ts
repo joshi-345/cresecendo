@@ -1,4 +1,4 @@
-import type { User, PredictionResult, Song, Artist, EmotionResult } from "./models";
+import type { User, Song, Artist, EmotionResult } from "./models";
 
 // --- Generic API Wrapper ---
 export interface ApiResponse<T> {
@@ -24,10 +24,35 @@ export interface AuthResponse {
 }
 
 // --- Prediction ---
+export interface ApiViralScore {
+  viral_score: number;
+  success_probability: number;
+  confidence_score: number;
+  growth_forecast: string;
+  model_version: string;
+  top_factors: { name: string; impact: number }[];
+}
+
 export interface PredictionResponse {
-  prediction: PredictionResult;
-  song: Song;
-  processingTimeMs: number;
+  prediction_id: string;
+  song_id: string;
+  song_title?: string;
+  artist_name?: string;
+  prediction: ApiViralScore;
+  predicted_genres: { genre: string; confidence: number }[];
+  audio_features?: Partial<{
+    danceability: number;
+    energy: number;
+    loudness: number;
+    speechiness: number;
+    acousticness: number;
+    instrumentalness: number;
+    liveness: number;
+    valence: number;
+    tempo: number;
+    duration_ms: number;
+  }>;
+  processing_time_ms: number;
 }
 
 // --- Emotion ---

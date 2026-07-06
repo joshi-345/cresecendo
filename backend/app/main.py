@@ -19,9 +19,32 @@ async def lifespan(app: FastAPI):
     from app.ml_integration.model_loader import model_manager
     model_manager.load_all()
     print(f"Loaded models: {model_manager.loaded_models}")
+    from app.db.database import init_db
+    await init_db()
     yield
     # --- Shutdown ---
-    print("Shutting down Crescendo")
+    print("Shutting down Crescendo — cleaning up resources...")
+    # Close HTTP clients
+    try:
+        from app.services.spotify import spotify_service
+        await spotify_service.close()
+        print("  [OK] Spotify client closed")
+    except Exception as e:
+        print(f"  [WARN] Spotify client cleanup: {e}")
+    try:
+        from app.services.genius import genius_service
+        await genius_service.close()
+        print("  [OK] Genius client closed")
+    except Exception as e:
+        print(f"  [WARN] Genius client cleanup: {e}")
+    # Dispose DB engine
+    try:
+        from app.db.database import engine
+        await engine.dispose()
+        print("  [OK] Database engine disposed")
+    except Exception as e:
+        print(f"  [WARN] Database engine cleanup: {e}")
+    print("Crescendo shutdown complete.")
 
 
 app = FastAPI(

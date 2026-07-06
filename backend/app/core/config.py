@@ -49,9 +49,18 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "crescendo_db"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
+    USE_SQLITE: bool = False
+    SQLITE_DB_PATH: str = "./crescendo_dev.db"
 
     @property
     def DATABASE_URL(self) -> str:
+        if self.USE_SQLITE:
+            from pathlib import Path
+
+            sqlite_path = Path(self.SQLITE_DB_PATH)
+            if not sqlite_path.is_absolute():
+                sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
+            return f"sqlite+aiosqlite:///{sqlite_path.as_posix()}"
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -59,6 +68,13 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL_SYNC(self) -> str:
+        if self.USE_SQLITE:
+            from pathlib import Path
+
+            sqlite_path = Path(self.SQLITE_DB_PATH)
+            if not sqlite_path.is_absolute():
+                sqlite_path = Path(__file__).resolve().parents[3] / sqlite_path
+            return f"sqlite:///{sqlite_path.as_posix()}"
         return (
             f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -101,7 +117,22 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
 
 
-settings = Settings()
+def _resolve_env_file() -> str:
+    """Find .env — check CWD, then parent dir, then project root."""
+    from pathlib import Path
+    candidates = [
+        Path(".env"),
+        Path("../.env"),
+        Path(__file__).resolve().parents[3] / ".env",  # backend/app/core -> project root
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate.resolve())
+    return ".env"  # Default — pydantic will just skip it
+
+
+settings = Settings(_env_file=_resolve_env_file())

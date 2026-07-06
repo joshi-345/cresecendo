@@ -37,6 +37,7 @@ class Song(Base):
     valence: Mapped[float | None] = mapped_column(Float, nullable=True)
     speechiness: Mapped[float | None] = mapped_column(Float, nullable=True)
     liveness: Mapped[float | None] = mapped_column(Float, nullable=True)
+    duration_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Metrics
     streams: Mapped[int | None] = mapped_column(Integer, nullable=True)

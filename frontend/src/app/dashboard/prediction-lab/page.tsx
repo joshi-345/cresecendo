@@ -10,18 +10,22 @@ import {
   BarChart3,
   Music,
   Loader2,
+  Tag,
 } from "lucide-react";
 
-// --- Mock Prediction Result ---
+import { apiPost } from "@/lib/api";
+import { usePredictionStore } from "@/lib/store";
+import { useToastStore } from "@/components/ui/toast";
+
 interface PredictionResult {
   viralScore: number;
   successProbability: number;
   confidenceScore: number;
   growthForecast: string;
+  modelVersion: string;
   topFactors: { name: string; impact: number }[];
+  predictedGenres: { genre: string; confidence: number }[];
 }
-
-import { apiPost } from "@/lib/api";
 
 export default function PredictionLabPage() {
   const [inputType, setInputType] = useState<"url" | "details">("url");
@@ -31,6 +35,8 @@ export default function PredictionLabPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const predictionStore = usePredictionStore();
+  const { addToast } = useToastStore();
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,13 +65,44 @@ export default function PredictionLabPage() {
       const response = await apiPost<any>("/predictions/analyze", payload);
       const data = response.prediction;
       
-      setResult({
+      const predResult = {
         viralScore: data.viral_score,
         successProbability: data.success_probability,
         confidenceScore: data.confidence_score,
         growthForecast: data.growth_forecast,
+        modelVersion: data.model_version,
         topFactors: data.top_factors || [],
+        predictedGenres: response.predicted_genres || [],
+      };
+      setResult(predResult);
+
+      // Push to PredictionStore so Audio Intelligence page can read it
+      const audioFeatures = response.audio_features;
+      predictionStore.setCurrentSong({
+        id: response.song_id,
+        title: response.song_title || songTitle,
+        artist: response.artist_name || artistName,
+        genre: response.predicted_genres?.[0]?.genre,
+        audioFeatures: audioFeatures
+          ? {
+              tempo: audioFeatures.tempo || 120,
+              key: "Unknown",
+              timeSignature: "4/4",
+              duration: Math.round((audioFeatures.duration_ms || 0) / 1000),
+              loudness: audioFeatures.loudness || -6,
+              danceability: audioFeatures.danceability || 0,
+              energy: audioFeatures.energy || 0,
+              acousticness: audioFeatures.acousticness || 0,
+              instrumentalness: audioFeatures.instrumentalness || 0,
+              valence: audioFeatures.valence || 0,
+              speechiness: audioFeatures.speechiness || 0,
+              liveness: audioFeatures.liveness || 0,
+            }
+          : undefined,
       });
+      predictionStore.setResult(predResult);
+
+      addToast(`Viral score: ${data.viral_score}% — ${data.growth_forecast}`, "success");
     } catch (err: any) {
       console.error("Prediction analysis failed:", err);
       const detail = err.response?.data?.detail || "Prediction failed. Please verify the URL or try again later.";
@@ -232,6 +269,19 @@ export default function PredictionLabPage() {
             <p className="text-center text-sm text-gray-400">
               {result.growthForecast}
             </p>
+            {result.predictedGenres.length > 0 && (
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
+                {result.predictedGenres.map((g) => (
+                  <span
+                    key={g.genre}
+                    className="flex items-center gap-1 rounded-full border border-brand-500/30 bg-brand-500/10 px-2.5 py-0.5 text-xs text-brand-300"
+                  >
+                    <Tag className="h-3 w-3" />
+                    {g.genre} ({g.confidence}%)
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Metrics */}

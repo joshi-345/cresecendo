@@ -19,7 +19,7 @@ export interface Song {
   title: string;
   artist: string;
   album?: string;
-  genre: string;
+  genre?: string;
   releaseDate?: string;
   coverUrl?: string;
   audioFeatures?: AudioFeatures;
@@ -60,6 +60,7 @@ export interface PredictionResult {
   growthForecast: string;
   modelVersion: string;
   topFactors: { name: string; impact: number }[];
+  predictedGenres?: { genre: string; confidence: number }[];
 }
 
 // ===== Emotion =====
