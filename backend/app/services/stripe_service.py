@@ -37,7 +37,7 @@ class StripeService:
             raise ValueError(f"Invalid subscription tier: {tier}")
 
         # Check if price ID is configured; if using placeholder, return a mock success URL redirect
-        if not price_id or price_id.startswith("price_"):
+        if not price_id or "placeholder" in price_id:
             # Mock redirect URL for development/testing
             return f"{self.success_url.replace('{CHECKOUT_SESSION_ID}', 'mock_session_id')}&mock=true&tier={tier}"
 
